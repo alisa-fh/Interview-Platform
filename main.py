@@ -3,10 +3,47 @@ import PySimpleGUI as sg
 import cv2
 import numpy as np
 import time
+import math
+
+import os
+from keras.models import model_from_json
+import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization, LeakyReLU
+from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.layers import MaxPooling2D
+from keras.preprocessing import image
+import imutils
 
 """
 Demo program that displays a webcam using OpenCV
 """
+
+model = Sequential()
+
+model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(48,48,1)))
+model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+
+model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
+
+model.add(Flatten())
+model.add(Dense(1024, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(7, activation='softmax'))
+
+
+#load weights
+model.load_weights('./newmodel/model.h5')
+# load facial detection
+face_haar_cascade = cv2.CascadeClassifier('./newmodel/haarcascade_frontalface_default.xml')
+emotion_dict = {0: "Angry", 1: "Disgusted", 2: "Fearful", 3: "Happy", 4: "Neutral", 5: "Sad", 6: "Surprised"}
 
 
 def main():
@@ -15,13 +52,22 @@ def main():
 
     sg.theme('DefaultNoMoreNagging')
     question_number = 1
-    task, question, options, answers, label_difficulty, time_length = getNextQuestion(df, question_number)
+    task, question, options, answers, actual_difficulty, label_difficulty, time_length = getNextQuestion(df, question_number)
     options = options.split(', ')
 
     if label_difficulty == 'Hard':
         difficulty_color = '#d12e30'
     else:
         difficulty_color = '#33cc4f'
+
+    left_checkboxes = [[sg.Text('(i)', font='Helvetica 17', justification="centre", key="i", size=(5,1), visible=False),
+                    sg.Checkbox('Option 1', font='Helvetica 18', key='C1', size=(15,1), visible = False),
+                   sg.Checkbox('Option 2', font='Helvetica 18', key='C2',size=(15,1), visible = False),
+                   sg.Checkbox('Option 3', font='Helvetica 18', key='C3',size=(15,1), visible = False)]]
+    right_checkboxes = [[sg.Text('(ii)', font='Helvetica 17', justification="centre", key="ii", size=(5,1), visible=False),
+                    sg.Checkbox('Option 4', font='Helvetica 18', key='C4',size=(15,1), visible = False),
+                   sg.Checkbox('Option 5', font='Helvetica 18', key='C5',size=(15,1), visible = False),
+                   sg.Checkbox('Option 6', font='Helvetica 18', key='C6',size=(15,1), visible = False)]]
 
     left_column = [[sg.Text('Task:\n ' + task, size=(50, 4), justification='center', font='Helvetica 20', key='task',
                             background_color='#c1c1c1')],
@@ -35,18 +81,15 @@ def main():
                             font='Helvetica 20', justification="left", key='time')
                     ],
 
-                    [sg.Text(question, size=(50, 8), justification='center', font='Helvetica 20',
-                        key='question_text')],
+                   [sg.Text(question, size=(50, 8),
+                            font='Helvetica 20', justification="left", key='qu', visible=False),
+                    sg.Text()],
 
-                   [sg.Checkbox('Option 1', font='Helvetica 14', key='C1', visible = False),
-                   sg.Checkbox('Option 2', font='Helvetica 14', key='C2', visible = False),
-                   sg.Checkbox('Option 3', font='Helvetica 14', key='C3', visible = False)],
-
-                   [sg.Checkbox('Option 4', font='Helvetica 14', key='C4', visible = False),
-                    sg.Checkbox('Option 5', font='Helvetica 14', key='C5', visible= False),
-                    sg.Checkbox('Option 6', font='Helvetica 14', key='C6', visible=False)]
+                    [sg.Column(left_checkboxes),
+                    sg.Column(right_checkboxes)]
 
                    ]
+
 
     right_column = [[sg.Image(filename='', key='image')]]
 
@@ -71,10 +114,24 @@ def main():
     # ---===--- Event LOOP Read and display frames, operate the GUI --- #
     cap = cv2.VideoCapture(0)
     answeringQuestion = False
+    emotion_dict = {0: "Angry", 1: "Disgusted", 2: "Fearful", 3: "Happy", 4: "Neutral", 5: "Sad", 6: "Surprised"}
+
 
     while True:
         event, values = window.read(timeout=1)
         ret, frame = cap.read()
+        gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        faces_detected = face_haar_cascade.detectMultiScale(gray_img, 1.32, 5)
+        for (x, y, w, h) in faces_detected:
+            cv2.rectangle(frame, (x, y-50), (x+w, y+h+10), (255, 0, 0), 2)
+            roi_gray = gray_img[y:y + h, x:x + w]
+            cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
+            prediction = model.predict(cropped_img)
+            print(prediction)
+            maxindex = int(np.argmax(prediction))
+            cv2.putText(frame, emotion_dict[maxindex], (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
         h, w, _ = frame.shape
         h = round(h / 2)
         w = round(w / 2)
@@ -83,7 +140,7 @@ def main():
         recordingOverlay(frame, '', (20, 50), (218, 18, 45))
         imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
         window['image'].update(data=imgbytes)
-        window['question_text'].update(visible=False)
+
 
 
         if event == 'Exit' or event == sg.WIN_CLOSED:
@@ -92,18 +149,36 @@ def main():
         elif event == 'Start':
             window['Start'].update(disabled=True)
             window['Submit'].update(disabled=False)
-            window['question_text'].update(visible = True)
+            qu_lines = math.ceil(len(question) / 50)
+            window['qu'].update(question, visible = True)
+            window['qu'].set_size((50, qu_lines))
             start = time.time()
+            if actual_difficulty == "Hard":
+                window["i"].update(visible=True)
+                window["ii"].update(visible=True)
+            else:
+                window["i"].update(visible=False)
+                window["ii"].update(visible=False)
+            window['C1'].update(text=options[0], visible=True, disabled=False)
+            window['C2'].update(text=options[1], visible=True, disabled=False)
+            window['C3'].update(text=options[2], visible=True, disabled=False)
+            if len(options) == 6:
+                window['C4'].update(text=options[3], visible=True, disabled=False)
+                window['C5'].update(text=options[4], visible=True, disabled=False)
+                window['C6'].update(text=options[5], visible=True, disabled=False)
+
             answeringQuestion = True
 
 
 
         elif event == 'Next Question':
             question_number += 1
-            task, question, options, answers, label_difficulty, time_length = getNextQuestion(df, question_number)
+            task, question, options, answers, actual_difficulty, label_difficulty, time_length = getNextQuestion(df, question_number)
             options = options.split(', ')
+
             window['question_number']("Question " + str(question_number))
-            window['question_text'](question)
+
+            # window['question_text'](question)
             window['task']("Task:\n" + task)
             window['difficulty'](label_difficulty)
             if label_difficulty == 'Hard':
@@ -112,17 +187,22 @@ def main():
                 difficulty_color = '#33cc4f'
             window['difficulty'].update(background_color=difficulty_color)
             window['time']("Given time: " + time.strftime("%H:%M:%S", time.gmtime(time_length))[3:])
-            window['C1'].update(text = options[0], visible = "True")
-            window['C2'].update(text=options[1], visible = "True" )
-            window['C3'].update(text=options[2], visible = "True")
-            if len(options) == 6:
-                window['C4'].update(text=options[3], visible = "True")
-                window['C5'].update(text=options[4], visible = "True")
-                window['C6'].update(text=options[5], visible = "True")
+            window['C1'].update(visible = False, value=False)
+            window['C2'].update(visible = False, value=False)
+            window['C3'].update(visible = False, value=False)
+            window['C4'].update(visible = False, value=False)
+            window['C5'].update( visible = False, value=False)
+            window['C6'].update( visible = False, value=False)
+            window['qu'].update(visible=False)
+            window["i"].update(visible=False)
+            window["ii"].update(visible=False)
+
 
 
             window['Start'].update(disabled=False)
             window['Submit'].update(disabled=True)
+            window['Next Question'].update(visible=False)
+
             if question_number == 6:
                 window['Exit'].update(disabled=True)
                 window['Exit']('Finish')
@@ -156,6 +236,12 @@ def main():
 
             if event == "Submit" or seconds_left < 1:
                 answeringQuestion = False
+                window['C1'].update(disabled=True)
+                window['C2'].update(disabled=True)
+                window['C3'].update(disabled=True)
+                window['C4'].update(disabled=True)
+                window['C5'].update(disabled=True)
+                window['C6'].update(disabled=True)
                 window['Submit'].update(disabled=True)
                 if question_number != 6:
                     window['Next Question'].update(visible=True)
@@ -185,13 +271,9 @@ def getNextQuestion(df, num):
     options = df.at[num-1, 'Options']
     answers = df.at[num - 1, 'Answers']
     label_difficulty = df.at[num-1, 'Labelled difficulty']
+    actual_difficulty = df.at[num - 1, 'Actual difficulty']
     time_length = df.at[num - 1, 'Timer length']
-    return task, question, options, answers, label_difficulty, time_length
-
-
-
-
-
+    return task, question, options, answers, actual_difficulty, label_difficulty, time_length
 
 
 
