@@ -44,7 +44,8 @@ model.load_weights('./newmodel/model.h5')
 # load facial detection
 face_haar_cascade = cv2.CascadeClassifier('./newmodel/haarcascade_frontalface_default.xml')
 emotion_dict = {0: "Angry", 1: "Disgusted", 2: "Fearful", 3: "Happy", 4: "Neutral", 5: "Sad", 6: "Surprised"}
-
+negative_indices = [0, 1, 2]
+positive_indices = [3, 4, 6]
 
 def main():
     df = readQuestionFile()
@@ -91,7 +92,10 @@ def main():
                    ]
 
 
-    right_column = [[sg.Image(filename='', key='image')]]
+    right_column = [[sg.Image(filename='', key='image')],
+                    [sg.Text("\n\n\n", size=(50, 4),
+                             font='Helvetica 18', justification="left", key='feedback', visible=True)]
+                    ]
 
     layout = [
         [
@@ -128,7 +132,6 @@ def main():
             roi_gray = gray_img[y:y + h, x:x + w]
             cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
             prediction = model.predict(cropped_img)
-            print(prediction)
             maxindex = int(np.argmax(prediction))
             cv2.putText(frame, emotion_dict[maxindex], (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
@@ -168,6 +171,8 @@ def main():
                 window['C6'].update(text=options[5], visible=True, disabled=False)
 
             answeringQuestion = True
+            negative_frames = 0
+            currentlyFeedbacking = False
 
 
 
@@ -218,11 +223,57 @@ def main():
 
             # updating video
             ret, frame = cap.read()
+            gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            faces_detected = face_haar_cascade.detectMultiScale(gray_img, 1.32, 5)
+            for (x, y, w, h) in faces_detected:
+                cv2.rectangle(frame, (x, y - 50), (x + w, y + h + 10), (255, 0, 0), 2)
+                roi_gray = gray_img[y:y + h, x:x + w]
+                cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
+                prediction = model.predict(cropped_img)
+                sum_positive = prediction[0][positive_indices].sum()
+                sum_negative = prediction[0][negative_indices].sum()
+
+                # If overall positive
+                if sum_positive > sum_negative:
+                    cv2.putText(frame, "positive "+ emotion_dict[int(np.argmax(prediction))], (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                (0, 0, 255),
+                                2)
+
+                    negative_frames = 0
+
+                # If overall negative
+                else:
+                    cv2.putText(frame, "negative " + emotion_dict[int(np.argmax(prediction))], (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                (0, 0, 255),
+                                2)
+                    negative_frames += 1
+
+                # If 5+ negative consecutive frames, output feedback
+                if not currentlyFeedbacking and negative_frames >= 5:
+                    cv2.putText(frame, "feedback ", (int(x), int(y)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1,
+                                (0, 0, 255),
+                                2)
+                    window["feedback"].update("Here is some feedback", visible=True)
+                    currentlyFeedbacking = True
+                    finish_time = seconds_left - 5
+
+                # Remove after 5 seconds or consistently happy
+
+                if currentlyFeedbacking and seconds_left <= finish_time:
+                    window["feedback"].update("\n\n\n")
+                    negative_frames = 0
+                    currentlyFeedbacking = False
+
+
+
             h, w, _ = frame.shape
             h = round(h / 2)
             w = round(w / 2)
             frame = cv2.resize(frame, (w, h))
             frame = cv2.flip(frame, 1)
+
             # draw the label into the frame
             if seconds_left > 10:
                 recordingOverlay(frame, 'Time remaining: ' + time_left, (20, 50), (0, 0, 0))
