@@ -4,22 +4,16 @@ import cv2
 import numpy as np
 import time
 import math
+import pandas as pd
+import random
+from varname import nameof
 
-import os
-from keras.models import model_from_json
-import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization, LeakyReLU
 from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.layers import MaxPooling2D
-from keras.preprocessing import image
-import imutils
 
-"""
-Demo program that displays a webcam using OpenCV
-"""
-
+# Model used
 model = Sequential()
 
 model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(48,48,1)))
@@ -39,22 +33,59 @@ model.add(Dropout(0.5))
 model.add(Dense(7, activation='softmax'))
 
 
-#load weights
+# Load pre-trained weights
 model.load_weights('./newmodel/model.h5')
-# load facial detection
+# Load facial detection
 face_haar_cascade = cv2.CascadeClassifier('./newmodel/haarcascade_frontalface_default.xml')
+
+# Emotion dictionary
 emotion_dict = {0: "Angry", 1: "Disgusted", 2: "Fearful", 3: "Happy", 4: "Neutral", 5: "Sad", 6: "Surprised"}
-negative_indices = [0, 1, 2]
+negative_indices = [0, 1, 2, 5]
 positive_indices = [3, 4, 6]
 
-def main():
-    df = readQuestionFile()
-    print(df)
+# Results
+pre_feedback = []
+post_feedback = []
+feedback_type = []
+question_list = []
 
-    sg.theme('DefaultNoMoreNagging')
+# Feedback
+bald = [ "Consider each potential word definition carefully",
+         "Ensure you have read the entire text slowly.",
+         "Consider which word(s) make the text flow best.",
+         "Make sure the whole text is understood.",
+         "Consider which words sound best in the context.",
+         "Consider which words are most similar.",
+         "Think about one word at a time."
+]
+
+positive_politeness = [ "We can do this, why don’t we consider each word’s definition?",
+                        "Gettting there, let’s make sure we’ve read through the text slowly!",
+                        "Shall we see which words seem most similar?",
+                        "Let’s see if we can figure which words fit best.",
+                        "Shall we take it one word at a time?",
+                        "Good concentration! We can try eliminating unlikely words."
+]
+
+feedback_dictionary = {0: "", 1: bald, 2: positive_politeness}
+
+
+
+
+
+
+
+def main():
+    # Read question CSV into data frame
+    qu_df = readQuestionFile()
+    print(qu_df)
     question_number = 1
-    task, question, options, answers, actual_difficulty, label_difficulty, time_length = getNextQuestion(df, question_number)
+    sg.theme('DefaultNoMoreNagging')
+
+    task, question, options, answers, actual_difficulty, label_difficulty, time_length = getNextQuestion(qu_df, question_number)
     options = options.split(', ')
+    user_answers = []
+    question_number = 1
 
     if label_difficulty == 'Hard':
         difficulty_color = '#d12e30'
@@ -93,8 +124,8 @@ def main():
 
 
     right_column = [[sg.Image(filename='', key='image')],
-                    [sg.Text("\n\n\n", size=(50, 4),
-                             font='Helvetica 18', justification="left", key='feedback', visible=True)]
+                    [sg.Text("\n\n\n", size=(50, 1),
+                             font='Helvetica 20', text_color="red", justification="left", key='feedback', visible=True)]
                     ]
 
     layout = [
@@ -109,6 +140,36 @@ def main():
         sg.Button('Exit', size=(10, 1), font='Helvetica 14')]
         ]
 
+    questionno_column = [[sg.Text("Question:", size=(9, 3), font='Helvetica 14', justification="left")],
+                        [sg.Text("1", size=(2, 5), font='Helvetica 14', justification="left")],
+                    [sg.Text("2", size=(2, 5), font='Helvetica 14', justification="left")],
+                       [sg.Text("3", size=(2, 5), font='Helvetica 14', justification="left")],
+                       [sg.Text("4", size=(2, 5), font='Helvetica 14', justification="left")],
+                       [sg.Text("5", size=(2, 5), font='Helvetica 14', justification="left")],
+                       [sg.Text("6", size=(2, 5), font='Helvetica 14', justification="left")]]
+    givans_column = [[sg.Text("You answered:", size=(13, 3), font='Helvetica 14', justification="left")],
+                    [sg.Text("1", size=(13, 5), font='Helvetica 14', justification="left", key="givans1")],
+                    [sg.Text("2", size=(13, 5), font='Helvetica 14', justification="left", key="givans2")],
+                       [sg.Text("3", size=(13, 5), font='Helvetica 14', justification="left", key="givans3")],
+                       [sg.Text("4", size=(13, 5), font='Helvetica 14', justification="left", key="givans4")],
+                       [sg.Text("5", size=(13, 5), font='Helvetica 14', justification="left", key="givans5")],
+                       [sg.Text("6", size=(13, 5), font='Helvetica 14', justification="left", key="givans6")]]
+    actans_column = [[sg.Text("Correct answer:", size=(15, 3), font='Helvetica 14', justification="left")],
+                    [sg.Text("1", size=(10, 5), font='Helvetica 14', justification="left", key="actans1")],
+                     [sg.Text("2", size=(10, 5), font='Helvetica 14', justification="left", key="actans2")],
+                     [sg.Text("3", size=(10, 5), font='Helvetica 14', justification="left", key="actans3")],
+                     [sg.Text("4", size=(10, 5), font='Helvetica 14', justification="left", key="actans4")],
+                     [sg.Text("5", size=(10, 5), font='Helvetica 14', justification="left", key="actans5")],
+                     [sg.Text("6", size=(10, 5), font='Helvetica 14', justification="left", key="actans6")]]
+
+    answer_layout = [
+        [sg.Column(questionno_column),
+        sg.Column(givans_column),
+        sg.Column(actans_column)],
+
+        [sg.Text('Score: ', size=(20, 1), font='Helvetica 14', key='score')]
+    ]
+
 
 
     # create the window and show it without the plot
@@ -117,10 +178,11 @@ def main():
 
     # ---===--- Event LOOP Read and display frames, operate the GUI --- #
     cap = cv2.VideoCapture(0)
-    answeringQuestion = False
+    isAnsweringQuestion = False
     emotion_dict = {0: "Angry", 1: "Disgusted", 2: "Fearful", 3: "Happy", 4: "Neutral", 5: "Sad", 6: "Surprised"}
-
-
+    total_answers = []
+    feedback_pointer = 0
+    user_score = 0
     while True:
         event, values = window.read(timeout=1)
         ret, frame = cap.read()
@@ -132,8 +194,9 @@ def main():
             roi_gray = gray_img[y:y + h, x:x + w]
             cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
             prediction = model.predict(cropped_img)
+            print(prediction)
             maxindex = int(np.argmax(prediction))
-            cv2.putText(frame, emotion_dict[maxindex], (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            # cv2.putText(frame, emotion_dict[maxindex], (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
         h, w, _ = frame.shape
         h = round(h / 2)
@@ -170,138 +233,238 @@ def main():
                 window['C5'].update(text=options[4], visible=True, disabled=False)
                 window['C6'].update(text=options[5], visible=True, disabled=False)
 
-            answeringQuestion = True
+            isAnsweringQuestion = True
             negative_frames = 0
             currentlyFeedbacking = False
 
 
 
         elif event == 'Next Question':
-            question_number += 1
-            task, question, options, answers, actual_difficulty, label_difficulty, time_length = getNextQuestion(df, question_number)
-            options = options.split(', ')
-
-            window['question_number']("Question " + str(question_number))
-
-            # window['question_text'](question)
-            window['task']("Task:\n" + task)
-            window['difficulty'](label_difficulty)
-            if label_difficulty == 'Hard':
-                difficulty_color = '#d12e30'
-            else:
-                difficulty_color = '#33cc4f'
-            window['difficulty'].update(background_color=difficulty_color)
-            window['time']("Given time: " + time.strftime("%H:%M:%S", time.gmtime(time_length))[3:])
-            window['C1'].update(visible = False, value=False)
-            window['C2'].update(visible = False, value=False)
-            window['C3'].update(visible = False, value=False)
-            window['C4'].update(visible = False, value=False)
-            window['C5'].update( visible = False, value=False)
-            window['C6'].update( visible = False, value=False)
+            print("Next question")
+            window['C1'].update(visible=False, value=False)
+            window['C2'].update(visible=False, value=False)
+            window['C3'].update(visible=False, value=False)
+            window['C4'].update(visible=False, value=False)
+            window['C5'].update(visible=False, value=False)
+            window['C6'].update(visible=False, value=False)
             window['qu'].update(visible=False)
             window["i"].update(visible=False)
             window["ii"].update(visible=False)
 
+            question_number += 1
+            if question_number == 7:
+                window['task'].update("See new window for your results.")
+                window['Next Question'].update(visible=False)
+                window['Start'].update(visible=False)
+                window['Submit'].update(visible=True)
+                window['question_number'].update(user_answers)
+                window['difficulty'].update(visible=False)
+                window['time'].update(visible=False)
+                answer_window = sg.Window('Results', answer_layout, location=(0, 0))
+                event, _ = answer_window.read(timeout=1)
 
+                for i in range(1, 7):
+                    if sorted(user_answers[i-1]) == sorted(total_answers[i-1]):
+                        user_score +=1
+                        answer_window['givans' + str(i)].update(text_color="green")
+                    else:
+                        answer_window['givans' + str(i)].update(text_color="red")
 
-            window['Start'].update(disabled=False)
-            window['Submit'].update(disabled=True)
-            window['Next Question'].update(visible=False)
+                    answer_to_print = '\n'.join(user_answers[i-1])
+                    answer_window['givans' + str(i)].update(answer_to_print)
+                    actual_answer_to_print = '\n'.join(total_answers[i-1])
+                    answer_window['actans' + str(i)].update(actual_answer_to_print)
 
-            if question_number == 6:
-                window['Exit'].update(disabled=True)
-                window['Exit']('Finish')
+                answer_window['score'].update("Score: " + str(user_score) + " out of 6")
 
-
-        while answeringQuestion:
-            event, values = window.Read(timeout=10)  # run every 10 milliseconds
-
-            current = time.time()
-            seconds_left = time_length - (current - start)
-            time_left = time.gmtime(seconds_left)
-            time_left = time.strftime("%H:%M:%S", time_left)[3:]
-
-            # updating video
-            ret, frame = cap.read()
-            gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-            faces_detected = face_haar_cascade.detectMultiScale(gray_img, 1.32, 5)
-            for (x, y, w, h) in faces_detected:
-                cv2.rectangle(frame, (x, y - 50), (x + w, y + h + 10), (255, 0, 0), 2)
-                roi_gray = gray_img[y:y + h, x:x + w]
-                cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
-                prediction = model.predict(cropped_img)
-                sum_positive = prediction[0][positive_indices].sum()
-                sum_negative = prediction[0][negative_indices].sum()
-
-                # If overall positive
-                if sum_positive > sum_negative:
-                    cv2.putText(frame, "positive "+ emotion_dict[int(np.argmax(prediction))], (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                                (0, 0, 255),
-                                2)
-
-                    negative_frames = 0
-
-                # If overall negative
-                else:
-                    cv2.putText(frame, "negative " + emotion_dict[int(np.argmax(prediction))], (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1,
-                                (0, 0, 255),
-                                2)
-                    negative_frames += 1
-
-                # If 5+ negative consecutive frames, output feedback
-                if not currentlyFeedbacking and negative_frames >= 5:
-                    cv2.putText(frame, "feedback ", (int(x), int(y)),
-                                cv2.FONT_HERSHEY_SIMPLEX, 1,
-                                (0, 0, 255),
-                                2)
-                    window["feedback"].update("Here is some feedback", visible=True)
-                    currentlyFeedbacking = True
-                    finish_time = seconds_left - 5
-
-                # Remove after 5 seconds or consistently happy
-
-                if currentlyFeedbacking and seconds_left <= finish_time:
-                    window["feedback"].update("\n\n\n")
-                    negative_frames = 0
-                    currentlyFeedbacking = False
-
-
-
-            h, w, _ = frame.shape
-            h = round(h / 2)
-            w = round(w / 2)
-            frame = cv2.resize(frame, (w, h))
-            frame = cv2.flip(frame, 1)
-
-            # draw the label into the frame
-            if seconds_left > 10:
-                recordingOverlay(frame, 'Time remaining: ' + time_left, (20, 50), (0, 0, 0))
+                while True:
+                    event, values = answer_window.read(timeout=1)
+                    if event == 'Exit' or event == sg.WIN_CLOSED:
+                        return
             else:
-                recordingOverlay(frame, 'Time remaining: ' + time_left, (20, 50), (0, 0, 255))
+                task, question, options, answers, actual_difficulty, label_difficulty, time_length = getNextQuestion(qu_df, question_number)
+                options = options.split(', ')
 
-            imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
-            window['image'].update(data=imgbytes)
+                window['question_number']("Question " + str(question_number))
 
-
-
-            if event == "Submit" or seconds_left < 1:
-                answeringQuestion = False
-                window['C1'].update(disabled=True)
-                window['C2'].update(disabled=True)
-                window['C3'].update(disabled=True)
-                window['C4'].update(disabled=True)
-                window['C5'].update(disabled=True)
-                window['C6'].update(disabled=True)
-                window['Submit'].update(disabled=True)
-                if question_number != 6:
-                    window['Next Question'].update(visible=True)
+                # window['question_text'](question)
+                window['task']("Task:\n" + task)
+                window['difficulty'](label_difficulty)
+                if label_difficulty == 'Hard':
+                    difficulty_color = '#d12e30'
                 else:
-                    window['Exit'].update(disabled=False)
-                break
+                    difficulty_color = '#33cc4f'
+                window['difficulty'].update(background_color=difficulty_color)
+                window['time']("Given time: " + time.strftime("%H:%M:%S", time.gmtime(time_length))[3:])
+                window['Start'].update(disabled=False)
+                window['Submit'].update(disabled=True)
+                window['Next Question'].update(visible=False)
 
-            if event == "Exit":
-                return
+
+        if isAnsweringQuestion:
+            # Facial expressions
+            total_answers, user_answers, feedback_pointer, window = answeringQuestion(window, time_length, cap, options, answers, question_number, user_answers, total_answers, feedback_pointer)
+
+            isAnsweringQuestion = False
+
+def audioAnalysis():
+    start = time.time()
+
+def answeringQuestion(window, time_length, cap, options, answers, question_number, user_answers, total_answers, feedback_pointer):
+    start = time.time()
+    currentlyFeedbacking = False
+    isAnsweringQuestion = True
+    negative_frames = 0
+    while isAnsweringQuestion:
+        event, values = window.Read(timeout=10)  # run every 10 milliseconds
+
+        current = time.time()
+        seconds_left = time_length - (current - start)
+        time_left = time.gmtime(seconds_left)
+        time_left = time.strftime("%H:%M:%S", time_left)[3:]
+
+        # updating video
+        ret, frame = cap.read()
+        gray_img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        faces_detected = face_haar_cascade.detectMultiScale(gray_img, 1.32, 5)
+        for (x, y, w, h) in faces_detected:
+            cv2.rectangle(frame, (x, y - 50), (x + w, y + h + 10), (255, 0, 0), 2)
+            roi_gray = gray_img[y:y + h, x:x + w]
+            cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
+            prediction = model.predict(cropped_img)
+            sum_positive = prediction[0][positive_indices].sum()
+            sum_negative = prediction[0][negative_indices].sum()
+
+            # If overall positive
+            if sum_positive > sum_negative:
+                cv2.putText(frame, "positive " + emotion_dict[int(np.argmax(prediction))], (int(x), int(y)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            (0, 0, 255),
+                            2)
+
+                negative_frames = 0
+                # print("positive ", prediction[0])
+                if currentlyFeedbacking:
+                    this_post_feedback.append(prediction[0].tolist())
+
+
+            # If overall negative
+            elif sum_positive < sum_negative:
+                cv2.putText(frame, "negative " + emotion_dict[int(np.argmax(prediction))], (int(x), int(y)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            (0, 0, 255),
+                            2)
+                negative_frames += 1
+                # print("negative ", prediction[0])
+                if currentlyFeedbacking:
+                    this_post_feedback.append(prediction[0].tolist())
+
+            # If 5+ negative consecutive frames, output feedback
+            if not currentlyFeedbacking and negative_frames >= 8:
+                pre_feedback.append(prediction[0].tolist())
+                this_post_feedback = []
+                cv2.putText(frame, "feedback ", (int(x), int(y)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1,
+                            (0, 0, 255),
+                            2)
+                if feedback_pointer == 0:
+                    window["feedback"].update("No Feedback", visible=True)
+                    feedback_type.append("No Feedback")
+                else:
+                    window["feedback"].update(random.choice(feedback_dictionary[feedback_pointer]))
+                    if feedback_pointer == 1:
+                        feedback_type.append("bald")
+                    else:
+                        feedback_type.append("positive_politeness")
+                question_list.append(question_number)
+                feedback_pointer = (feedback_pointer + 1) % 3
+
+                currentlyFeedbacking = True
+                finish_time = seconds_left - 5
+
+            # Remove after 5 seconds or consistently happy
+            if currentlyFeedbacking and seconds_left <= finish_time:
+                window["feedback"].update("")
+                negative_frames = 0
+                currentlyFeedbacking = False
+                post_feedback.append(this_post_feedback)
+                this_post_feedback = []
+
+        h, w, _ = frame.shape
+        h = round(h / 2)
+        w = round(w / 2)
+        frame = cv2.resize(frame, (w, h))
+        frame = cv2.flip(frame, 1)
+
+        # draw the label into the frame
+        if seconds_left > 10:
+            recordingOverlay(frame, 'Time remaining: ' + time_left, (20, 50), (0, 0, 0))
+        else:
+            recordingOverlay(frame, 'Time remaining: ' + time_left, (20, 50), (0, 0, 255))
+
+        imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
+        window['image'].update(data=imgbytes)
+
+        if event == "Submit" or seconds_left < 1:
+            isAnsweringQuestion = False
+            if currentlyFeedbacking:
+                window["feedback"].update("")
+                negative_frames = 0
+                currentlyFeedbacking = False
+                post_feedback.append(this_post_feedback)
+                this_post_feedback = []
+
+            window['C1'].update(disabled=True)
+            window['C2'].update(disabled=True)
+            window['C3'].update(disabled=True)
+            window['C4'].update(disabled=True)
+            window['C5'].update(disabled=True)
+            window['C6'].update(disabled=True)
+            window['Submit'].update(disabled=True)
+
+            question_user_answers = []
+            if values['C1']:
+                question_user_answers.append(options[0])
+            if values['C2']:
+                question_user_answers.append(options[1])
+            if values['C3']:
+                question_user_answers.append(options[2])
+            if values['C4']:
+                question_user_answers.append(options[3])
+            if values['C5']:
+                question_user_answers.append(options[4])
+            if values['C6']:
+                question_user_answers.append(options[5])
+            user_answers.append(question_user_answers)
+            print("user_answers ", user_answers)
+
+            answers = answers.split(', ')
+            total_answers.append(answers)
+            print('total_answers ', total_answers)
+
+            emotion_data = {
+                'question': question_list,
+                'feedback type': feedback_type,
+                'pre-feedback': pre_feedback,
+                'post-feedback': post_feedback
+            }
+            res_df = pd.DataFrame(emotion_data, columns=['question', 'feedback type', 'pre-feedback', 'post-feedback'])
+            res_df.to_csv('emotion_data.csv')
+            if question_number != 6:
+                window['Next Question'].update(visible=True)
+            else:
+                window['Next Question'].update(visible=True)
+                window['Next Question'].update("View Results")
+            break
+
+        if event == "Exit":
+            return
+
+    print("about to return")
+
+    return total_answers, user_answers,feedback_pointer, window
+
 
 def recordingOverlay(img, text, pos, col):
     font_face = cv2.FONT_HERSHEY_COMPLEX
@@ -312,18 +475,18 @@ def recordingOverlay(img, text, pos, col):
 
 def readQuestionFile():
     import pandas
-    df = pandas.read_csv('question-sheet.csv')
-    return df
+    qu_df = pandas.read_csv('question-sheet.csv')
+    return qu_df
 
-def getNextQuestion(df, num):
+def getNextQuestion(qu_df, num):
     # Question num is index + 1
-    task = df.at[num-1, 'Task']
-    question = df.at[num-1, 'Question']
-    options = df.at[num-1, 'Options']
-    answers = df.at[num - 1, 'Answers']
-    label_difficulty = df.at[num-1, 'Labelled difficulty']
-    actual_difficulty = df.at[num - 1, 'Actual difficulty']
-    time_length = df.at[num - 1, 'Timer length']
+    task = qu_df.at[num-1, 'Task']
+    question = qu_df.at[num-1, 'Question']
+    options = qu_df.at[num-1, 'Options']
+    answers = qu_df.at[num - 1, 'Answers']
+    label_difficulty = qu_df.at[num-1, 'Labelled difficulty']
+    actual_difficulty = qu_df.at[num - 1, 'Actual difficulty']
+    time_length = qu_df.at[num - 1, 'Timer length']
     return task, question, options, answers, actual_difficulty, label_difficulty, time_length
 
 
