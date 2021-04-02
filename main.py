@@ -6,14 +6,21 @@ import time
 import math
 import pandas as pd
 import random
-from varname import nameof
+from audio import initModel, audioAnalysis, changeKillAudioThread, getAudioFeedbackQueue, clearAudioFeedbackQueue, getNegativeResult, clearNegativeResult
 
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, BatchNormalization, LeakyReLU
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.layers import MaxPooling2D
 
-# Model used
+from threading import Thread
+
+
+
+# Initialise audio model
+initModel()
+
+# Facial odel used
 model = Sequential()
 
 model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(48,48,1)))
@@ -34,9 +41,9 @@ model.add(Dense(7, activation='softmax'))
 
 
 # Load pre-trained weights
-model.load_weights('./newmodel/model.h5')
+model.load_weights('./facialmodel/model.h5')
 # Load facial detection
-face_haar_cascade = cv2.CascadeClassifier('./newmodel/haarcascade_frontalface_default.xml')
+face_haar_cascade = cv2.CascadeClassifier('./facialmodel/haarcascade_frontalface_default.xml')
 
 # Emotion dictionary
 emotion_dict = {0: "Angry", 1: "Disgusted", 2: "Fearful", 3: "Happy", 4: "Neutral", 5: "Sad", 6: "Surprised"}
@@ -71,10 +78,6 @@ feedback_dictionary = {0: "", 1: bald, 2: positive_politeness}
 
 
 
-
-
-
-
 def main():
     # Read question CSV into data frame
     qu_df = readQuestionFile()
@@ -101,7 +104,7 @@ def main():
                    sg.Checkbox('Option 5', font='Helvetica 18', key='C5',size=(15,1), visible = False),
                    sg.Checkbox('Option 6', font='Helvetica 18', key='C6',size=(15,1), visible = False)]]
 
-    left_column = [[sg.Text('Task:\n ' + task, size=(50, 4), justification='center', font='Helvetica 20', key='task',
+    left_column = [[sg.Text('Task:\n ' + task, size=(50, 5), justification='center', font='Helvetica 20', key='task',
                             background_color='#c1c1c1')],
 
                    [sg.Text()],
@@ -194,8 +197,6 @@ def main():
             roi_gray = gray_img[y:y + h, x:x + w]
             cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
             prediction = model.predict(cropped_img)
-            print(prediction)
-            maxindex = int(np.argmax(prediction))
             # cv2.putText(frame, emotion_dict[maxindex], (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
         h, w, _ = frame.shape
@@ -232,7 +233,7 @@ def main():
                 window['C4'].update(text=options[3], visible=True, disabled=False)
                 window['C5'].update(text=options[4], visible=True, disabled=False)
                 window['C6'].update(text=options[5], visible=True, disabled=False)
-
+            window.read(timeout=1)
             isAnsweringQuestion = True
             negative_frames = 0
             currentlyFeedbacking = False
@@ -303,20 +304,28 @@ def main():
 
         if isAnsweringQuestion:
             # Facial expressions
-            total_answers, user_answers, feedback_pointer, window = answeringQuestion(window, time_length, cap, options, answers, question_number, user_answers, total_answers, feedback_pointer)
-
+            # total_answers, user_answers, feedback_pointer, window = answeringQuestion(window, time_length, cap, options, answers, question_number, user_answers, total_answers, feedback_pointer)
+            # Audio
+            changeKillAudioThread(False)
+            t1 = Thread(target=audioAnalysis, daemon=True)
+            t1.start()
+            total_answers, user_answers, feedback_pointer = answeringQuestion(window, time_length, cap, options, answers, question_number, user_answers, total_answers, feedback_pointer)
+            print("after facial, should now kill speech")
+            changeKillAudioThread(True)
             isAnsweringQuestion = False
+            print("alive? ", t1.isAlive())
 
-def audioAnalysis():
-    start = time.time()
+
 
 def answeringQuestion(window, time_length, cap, options, answers, question_number, user_answers, total_answers, feedback_pointer):
+    print("in answeringQuestion")
     start = time.time()
     currentlyFeedbacking = False
     isAnsweringQuestion = True
     negative_frames = 0
+    audioFeedback = False
     while isAnsweringQuestion:
-        event, values = window.Read(timeout=10)  # run every 10 milliseconds
+        event, values = window.read(timeout=5)  # run every 10 milliseconds
 
         current = time.time()
         seconds_left = time_length - (current - start)
@@ -345,7 +354,7 @@ def answeringQuestion(window, time_length, cap, options, answers, question_numbe
 
                 negative_frames = 0
                 # print("positive ", prediction[0])
-                if currentlyFeedbacking:
+                if currentlyFeedbacking and not audioFeedback:
                     this_post_feedback.append(prediction[0].tolist())
 
 
@@ -357,19 +366,27 @@ def answeringQuestion(window, time_length, cap, options, answers, question_numbe
                             2)
                 negative_frames += 1
                 # print("negative ", prediction[0])
-                if currentlyFeedbacking:
+                if currentlyFeedbacking and not audioFeedback:
                     this_post_feedback.append(prediction[0].tolist())
+            print("audio_feedback_queue ", getAudioFeedbackQueue())
 
             # If 5+ negative consecutive frames, output feedback
-            if not currentlyFeedbacking and negative_frames >= 8:
-                pre_feedback.append(prediction[0].tolist())
+            if (not currentlyFeedbacking and negative_frames >= 8) or getAudioFeedbackQueue() > 0:
+                if getAudioFeedbackQueue() > 0:
+                    audioFeedback = True
+                    clearAudioFeedbackQueue()
+                    print("audio_feedback_q post clear", getAudioFeedbackQueue())
+                    pre_feedback.append(getNegativeResult(True))
+                else:
+                    audioFeedback = False
+                    pre_feedback.append(prediction[0].tolist())
                 this_post_feedback = []
                 cv2.putText(frame, "feedback ", (int(x), int(y)),
                             cv2.FONT_HERSHEY_SIMPLEX, 1,
                             (0, 0, 255),
                             2)
                 if feedback_pointer == 0:
-                    window["feedback"].update("No Feedback", visible=True)
+                    window["feedback"].update("", visible=True)
                     feedback_type.append("No Feedback")
                 else:
                     window["feedback"].update(random.choice(feedback_dictionary[feedback_pointer]))
@@ -384,12 +401,23 @@ def answeringQuestion(window, time_length, cap, options, answers, question_numbe
                 finish_time = seconds_left - 5
 
             # Remove after 5 seconds or consistently happy
-            if currentlyFeedbacking and seconds_left <= finish_time:
+            if not audioFeedback and currentlyFeedbacking and seconds_left <= finish_time:
                 window["feedback"].update("")
                 negative_frames = 0
                 currentlyFeedbacking = False
                 post_feedback.append(this_post_feedback)
                 this_post_feedback = []
+                clearAudioFeedbackQueue()
+
+            if audioFeedback and currentlyFeedbacking and len(getNegativeResult(False)) == 3:
+                window["feedback"].update("")
+                negative_frames = 0
+                currentlyFeedbacking = False
+                post_feedback.append(getNegativeResult(False))
+                clearNegativeResult()
+                this_post_feedback = []
+                clearAudioFeedbackQueue()
+                audioFeedback = False
 
         h, w, _ = frame.shape
         h = round(h / 2)
@@ -441,6 +469,7 @@ def answeringQuestion(window, time_length, cap, options, answers, question_numbe
 
             answers = answers.split(', ')
             total_answers.append(answers)
+
             print('total_answers ', total_answers)
 
             emotion_data = {
@@ -449,7 +478,17 @@ def answeringQuestion(window, time_length, cap, options, answers, question_numbe
                 'pre-feedback': pre_feedback,
                 'post-feedback': post_feedback
             }
+
+            # Takes into account if it didn't finish feedbacking
+            if len(post_feedback) == len(pre_feedback) - 1:
+                if audioFeedback:
+                    post_feedback.append(getNegativeResult(False))
+                else:
+                    post_feedback.append(this_post_feedback)
+
+            print(len(question_list), len(feedback_type), len(pre_feedback), len(post_feedback))
             res_df = pd.DataFrame(emotion_data, columns=['question', 'feedback type', 'pre-feedback', 'post-feedback'])
+
             res_df.to_csv('emotion_data.csv')
             if question_number != 6:
                 window['Next Question'].update(visible=True)
@@ -463,7 +502,7 @@ def answeringQuestion(window, time_length, cap, options, answers, question_numbe
 
     print("about to return")
 
-    return total_answers, user_answers,feedback_pointer, window
+    return total_answers, user_answers, feedback_pointer
 
 
 def recordingOverlay(img, text, pos, col):

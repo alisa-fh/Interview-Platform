@@ -30,7 +30,7 @@ class faceCollector():
         sg.theme('DefaultNoMoreNagging')
         self.window = sg.Window('Preliminary Data Collection',
                            self.layout, location=(0, 0))
-        self.emotiondata = ["angry", "neutral", "disgust", "neutral2", "fear", "happy", "neutral3", "sad",]
+        self.emotiondata = ["angry", "neutral", "disgusted", "neutral2", "fear", "happy", "neutral3", "sad",]
         self.caption = ["Man at a concentration camp", "A stone wall", "Some dead bodies", "A brick wall", "A ghost", "Dog in a cup", "Cotton buds", "Destruction of a building"]
 
 
