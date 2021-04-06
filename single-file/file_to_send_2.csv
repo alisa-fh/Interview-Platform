@@ -1,0 +1,7 @@
+,question,user answers,actual answers
+0,['1'],"['reproduction', 'stability']","['diversity', 'variety']"
+1,['2'],"['fleeting', 'momentary']","['fleeting', 'momentary']"
+2,['3'],['adequate to'],['adequate to']
+3,['4'],"['quixotic', 'brandish']","['strategic', 'brandish']"
+4,['5'],"['imminent', 'imprudent']","['imminent', 'curtailed']"
+5,['6'],"['tumult', 'promote']","['eminence', 'relegate']"
