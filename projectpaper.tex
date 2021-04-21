@@ -1,0 +1,304 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{times}
+\usepackage{durhampaper}
+\usepackage{harvard}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{tabularx}
+
+
+\citationmode{abbr}
+\bibliographystyle{agsm}
+
+\title{A Multimodal System for Mitigating Negative Emotions in Interviews based on Human-Automation Etiquette Strategies}
+\author{} % leave; your name goes into \student{}
+\student{Alisa Hussain}
+\supervisor{Suncica Hadzidedic}
+\degree{BSc Computer Science}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+	
+{\bf Context/Background -} Different machine learning techniques have been investigated to identify affect in users in order that technology can adapt to optimise user experience. There has been limited research conducted regarding adapting a user interface in a computer interview context, particularly that reducing negative emotions which could impede candidate performance.
+
+{\bf Aims -} The aim of this study is to investigate the effects of feedback on user emotion through the means of facial expression and speech analysis with convolutional neural network models. Particularly, it evaluates the use of human-automation etiquette strategies to minimise negative emotion of candidates in interviews.
+
+{\bf Method -}
+
+{\bf Results -}
+
+{\bf Conclusions -}
+
+
+The abstract must be a Structured Abstract with the headings {\bf Context/Background}, {\bf Aims}, {\bf Method}, {\bf Results}, and {\bf Conclusions}.  This section should not be longer than half of a page, and having no more than one or two sentences under each heading is advised.
+\end{abstract}
+
+\begin{keywords}
+Put a few keywords here.
+\end{keywords}
+
+\section{Introduction}
+Emotion is a key component of Human Computer Interaction (HCI), playing a critical role in every computer-related thought or action \cite{picard1997does}. The aim of HCI and affective computing is to shift cognitive load from humans to computers, such to optimise a user's task experience.  Negative emotions, particularly frustration impact productivity, learning and creativity \cite{amsel1992frustration}. The majority of existing research focuses on the impact of negative emotions on tasks, and means of recognising emotional states. Less have investigated computer adaptations to mitigate these emotions. This is a critical part of research since systems which minimise negative emotions demonstrate an improvement in responsiveness, engagement \cite{huber2016recognizing}, task success \cite{wang2008politeness} and motivation \cite{aist2002experimentally}. 
+
+HCI has been explored in a spectrum of contexts, such as education, to optimise learning \cite{graesser2005autotutor}. An area less explored is affect in computer automated job interviews. Data indicates anxious interview candidates are less likely to be hired, despite this anxiety not correlating with job performance as judged by a supervisor \cite{schneider2019does}. Reducing costs associated with employing human interviewers, there is a rise of computer-led job interviews, further accelerated by the Covid-19 pandemic. There is opportunity to exploit a user interface to minimise negative emotional states of a candidate, which could otherwise confound judgement on their suitability for a job. Anxiety and frustration have been shown to have a detrimental impact on a system user. An example of this is in a digital symbol substitution test \cite{burgess1964effects}, where frustration hindered user performance. From an educational perspective, frustration diminishes student motivation \cite{weiner1985attributional}, attention \cite{niedenthal1994emotional} and creativity \cite{isen1987positive}. This study looks recognise emotions that underpin frustration and anxiety in a user and consequently adapt to mitigate them.
+
+\subsection{Affect Recognition}
+There exists a range of means to recognise affect. Multimodal systems, which detect emotional states in more than one way are standard in research for their increased reliability \cite{jaimes2007multimodal}. Prior studies have made use of specialist equipment to measure physiological signals such as skin conductance and heart rate \cite{pantic2003toward}, which are arguably more objective, and provide accurate measures for a user's mental workload. However, required equipment is reported to be expensive, obtrusive and places users in a setting unrepresentative of how they may naturally use the system \cite{tao2019systematic}. This study focusses on facial expression and speech analysis. This is unobtrusive, as these would normally be observed in a computer interview context.
+
+A fundamental consideration in affective computing is emotion theory. A common model of emotions used is Ekman's six basic emotions \cite{ekman1992argument}: fear, anger, disgust, sadness, joy and surprise. They can be combined to form more complex emotions, including frustration and anxiety. This model forms the basis of many emotion datasets validated by research such as the open-source FER-2013 facial expression dataset. An alternate system is the Facial Action Coding System (FACS), a standardised system for coding movements of specific groups of muscles also known as action units. This system is more precise due to its region-based approach \cite{ekman2002facial}. Fewer developments have been made with speech emotion recognition. Existing work tends to focus on methods for feature extraction and analysis. The RELIEF-F algorithm \cite{kononenko1994estimating} is commonly used to extract prosodic information including pitch, duration and intensity of utterances. This has been implemented in contexts such as call centres to automatically understand emotional states and prioritise voice messages \cite{petrushin1999emotion}. Again, little research has been done in the application of this information to mitigate negative emotions.
+
+Historically, the use of Bayesian networks for affect classification was popular, because of their ability to handle missing data during inference and training \cite{cohen2003learning}. This method was shown to produce up to 72.5\% accuracy, an improvement on other methods such as Tree-Augmented Naive Bayes. However more recently convolutional neural networks (CNNs) have been used more with advantages such as a simpler architecture, faster training and boasting up to 96.7\% accuracy. In addition, it proves suitable for real time applications \cite{LOPES2017610}.
+
+\subsection{System Adaptations}
+System adaptations are taxonomised into four key categories: function allocation, such as the offloading of tasks; task scheduling which entails timings and duration of tasks; content including quality and quantity; and interaction such as style and interface features \cite{feigh2012toward}. Research, particularly in education, is heavy on function allocation and content adaptations. This often means selecting tasks that engage learners most, and presenting it in a particular way. Our work focusses on interaction style, investigating whether this alone can influence a user's emotional state. Particularly, we transfer the concept of etiquette in human-human interaction to an HCI context. We investigate if computer systems can adapt communication style, in the way a human would, to minimise frustration, and improve task performance. Studies on the effect of etiquette between humans indicate improved communication and encourages effective tutoring. Implementing similar strategies into computers should influence user trust and system performance \cite{parasuraman2004trust}. From this emerges the research question: can etiquette strategies prevalent in human interaction be applied by a computer to mitigate negative user emotions in a computer-based automated job interview?
+
+\subsection{Objectives}
+To address the research question, we split the study into three sets of objectives: minimum, intermediate and advanced.
+
+The minimum objective works towards a basic user system and the collection of one type of data. The system is a graphical user interface through which a set of predetermined questions would be asked for users to respond to as part of an interview. It would have to resemble existing platforms to ensue representative results. Facial expression data would be collected, with the use of real-time expression recognition integrated into the application. CNNs would be used to develop a facial expression recognition model. In response to recognised emotional states, the system should use hard coded rules to make appropriate comments.
+
+Intermediate objectives introduces speech as the secondary data to be analysed in our multimodal system. CNNs would be used to train a model on vocal data and corresponding emotional states. Hard coded rules determine outputted feedback in response to recognised negative emotional states. 
+
+Finally, the advanced objectives looks to train the facial expression model on a particular user. Facial and speech data would both be used to understand the change in negative emotional state after the computer's feedback. Finally, the effect of etiquette strategies on a user's overall task performance would also be analysed.
+
+* To include a couple sentences on what was achieved after experiment is completed *
+
+
+
+\section{Related Work}
+\subsection{Affect Recognition}
+The determination of affect is often done by analysing multiple data sources. Facial expression analysis is popular due to its unobtrusive nature. Different expression recognition approaches have been developed recently, improving on performance. Deep learning developments is particularly key to this progress \cite{voulodimos2018deep}. In 2003, Ira et al tested different Bayesian networks classifiers on emotion classification in videos, proposing a Hidden Markov Model architecture \cite{cohen2003evaluation}. Work has progressed since then to a more recent focus on CNNs \cite{cohen2003learning}. This is due to increase in data available for training neural networks, and advances in GPU technology for low-cost, high performance numerical calculations \cite{LOPES2017610}. Lopes et al looked at combining CNNs with specific pre-processing steps such as artificial rotations and translations, producing accuracies of 96.76\% on the Cohn Kanade+ dataset \cite{lucey2010extended}. This work demonstrated how pre-processing images can overcome the need for controlled environments and issues related to a lack of data. This approach also produced speeds which allowed for real time recognition on standard computers, important for the application in this work.
+
+The RELIEF-F algorithm \cite{kononenko1994estimating} is commonly used in speech analysis to extract vocal features. This was used in the study of vocal emotion expression in call centres to optimise how calls were prioritised \cite{petrushin1999emotion}. 700 utterances were analysed, with features such as pitch, speaking rate, formants and energy rate extracted and analysed. Evaluating a range of machine learning methods, the most accurate was an ensemble of an odd number of neural network classifiers, each trained on a subset of the training set, making an overall decision using the majority voting principle. Although results were impressive, more recent work supports the use of CNNs, whose structures such as local connectivity and weight sharing make it better suited to dealing with environment and speaker variations, reducing the error rate.
+\subsection{Frustration in HCI}
+Frustration is defined as an emotional state appearing when obstacles block the possibility of achieving a goal \cite{lawson1965frustration}. It is one of the most common experiences in HCI \cite{ceaparu2004determining}, often interfering with the completion of tasks \cite{waterhouse1953frustration}. An example of such was an operator's task performance in a robot vehicle teleoperating task \cite{yang2015effect}. Face tracking and electrodermal activity indicated a decrease in user satisfaction when there was a delay in system response. Studies have looked into how to account for negative affect in the development of systems. In a driving context, a study looked to mitigate frustration with the use of Ambient Light Patterns \cite{locken2017towards}. Woolf et al worked on a tutor system that would encourage the completion of student's tasks despite frustration \cite{woolf2009affect}. This was achieved by mirroring student actions to show empathy, adjusting the authority level of the tutoring system to ease pressure, and changing the voice, motion and gestures of the avatar. The sensing and responding to emotions such as frustation is a step towards building a human-like affective computer \cite{klein2002computer}. We consider if responsive actions such as these could produce a human-like affective computer that can mitigate negative emotions and consequently improve task performance in interviews. 
+\subsection{Adaptations}
+Easy with Eve is an affective tutoring system for primary school mathematics which uses a lifelike animated agent to adapt to students. The six basic facial expressions as defined by Ekman \cite{ekman1992argument} is used, as is applied in our study. In response to displayed expressions, the agent, Eve, responds with facial expressions and gives feedback, according to pre-defined cases. Barron et al also followed Ekman's model to propose an intelligent tutoring system (ITS) \cite{barron2012intelligent}, which combined information on the user's affect as determined by facial expression and speech data, with personal and academic information to present exercises to students. A dynamic decision network is used to determine the tutor's best course of action, depending on learning and affect utility measures. Our study also provides affect-dependent feedback in a similar manner to this ITS, but with the specifc aim of minimising negative emotion. Autotutor is another ITS which extends student feedback to a conversation to optimise learning. Additional affective states are also considered, with the help of 5 trained judges including confusion, boredom and flow. Although these states may appear relevant to our study, we did not have access to trained judges.
+\subsection{Etiquette Strategies}
+Etiquette strategies between humans were first defined by Brown and Levinson as ways to formulate messages in order to save the hearer's positive face when face-threatening acts (FTAs) are inevitable \cite{brown1987politeness}. FTAs are acts that damage the face of the addressee by acting in oposition of the desires of the other. The strategies are rules guiding conversation used to facilitate cooperation to maintain each other's face. There are four types of etiquette strategies: bald, negative politeness, positive politeness and off-record. Bald takes no account into the level of imposition to the hearer, and does not attempt to mimise threat to the hearer's face. An example of a bald statement is, "answer the question". Positive politeness minimises imposition between the speaker and hearer with statements of solidarity and compliments. An example is, "you look sad, can I do anything?". The concept of etiquette has been applied to automation, to make interactions between humans and computers natural and polite. A virtual manufacturing plant training system evaluated direct and indirect interactions towards students, and found indirect communications elicited higher student motivation \cite{qu2005using}. In terms of learning efficiency, positive and negative politeness strategies have both shown benefits when using a factory training system \cite{johnson2010role}. It is clear that particular contexts suit different politeness strategies. A hospital information system was evaluated in terms of politeness and appropriateness \cite{bickmore2010response}. Ratings were highest in bald, positive and negative politeness conditions. Off-record was reported as less subtle and considerate. Extending this, a study aiming to mitigate student frustation in a tutoring system showed that the most effective strategy on a student's motivation, confidence, satisfaction and performance varied dependent on whether the student was frustrated \cite{yang2018evaluating}. Additionally, positive and negative politeness improved confidence and satisfaction. From this, we look at positive politeness and bald strategies to evaluate the effect on user frustration and task performance.
+\subsection{Summary}
+Frustration is very common in HCI \cite{ceaparu2004determining}, particularly affecting task performance, which is an issue when computers arguably exist to optimise work. The recognition and consequent adaptation to a user's affect to mitigate negative emotions underpinning frustration could improve the interaction between systems and humans, consequently improving task performance. Although many studies focus on developing affect recognition methods, investigating the best ways to extract facial or vocal features for recognition, and the effect of factors on affect, fewer investigate adaptations to mitigate negative affective states. Etiquette strategies provide a way for computers to address affect in a natural way resembling human interaction. This study aims to apply the recognition methods discussed to extend Yang and Dorneich's work on etiquette strategies in tutoring \cite{yang2018evaluating} to determine whether these strategies can be used to mitigate negative emotions underpinning frustration in computer interviews. This in turn should optimise task performance and allow accurate judgements to be made on a candidate's job suitability.
+
+
+\section{Solution}
+In this section we present a solution to investigate the effect of etiquette strategies on the mitigation of negative user emotional states in a computer-automated job interview. To begin, a solution architecture outline is presented before an in-depth discussion of the solution, tools used and the underlying algorithms in the following subsections.
+
+\subsection{Solution Architecture Overview}
+An overview of the solution is illustrated in Figure 1. We break it down into the basic system the user uses, \textbf{a}, which uses the models from component \textbf{b, c} and \textbf{d} of the solution. Key to the basic system is a clean GUI which the user interacts with. Through this the questions can be accessed, which they respond to using their microphone and webcam. As touched on in the prior section, comments that satisfy bald and positive politeness etiquette strategies will be established and used in response to negative affect, and the change in emotional state recorded.
+
+With regards to affect recognition, the facial expression dataset, FER-2013 \cite{Goodfeli-et-al-2013}, and speech dataset, RAVDESS, \cite{livingstone2018ryerson} are acquired as discussed in the following subsections. After data preparation, audio data is augmented to overcome issues related to environment variations. Two CNN architectures are developed using Keras, a high-level API for Tensorflow, an open source software library for machine learning \cite{chollet2015keras}. Training, testing, and evaluation of the models are important to ensure optimal parameter configuration. These are used directly by the main application simultaneously in two separate threads to constantly recognise the affective state of the user. 
+
+Part c in the diagram outlines the personalised facial expression module. A model is trained on the individual participant, who may express emotions in a specific way. Stimulus images are presented to the participant, who then react. Their facial expressions are recorded and appended to the original FER-2013 dataset for a more tailored model, learnt using more labelled data.
+
+The application was implemented in Python because of the extensive Python documentation for Tensorflow and OpenCV. Additionally the PySimpleGUI library for designing graphical interfaces is robust and also well-documented.
+
+\begin{figure}[h]
+	\centerline{\includegraphics[scale=.3]{diagrams/solutionoverview.png}}
+	\caption{Solution overview}
+\end{figure}
+
+\subsection{Basic System}
+\subsection*{Interview}
+It was important that the structure of the interview task resembled a standard computer automated task that would normally be faced by university graduates in terms of length, difficulty, and style for reliable, representative results. To establish graduate level difficulty, questions were sourced from the Graduate Records Examinations (GRE), a standardised test used for entry into many graduate schools in the United States and Canada. The GRE was also used by Yang and Dorneich in their study on mitigating frustration in education \cite{yang2018evaluating}, reinforcing the suitability of questions for our application. In addition, there exists a lot of data on GRE questions including the rates of correct answers. Although they used the mathematics component of the exam, we decided on verbal reasoning, since this would not only be easier to discuss in an interview, but would create a level playing field for students, whether or not they study a mathematical-based degree. Each section has 20 questions, with 30 minutes allocated, leaving an average of 1.5 minutes per question. HireVue, an automated computer interview platform, having hosted over 20 million interviews, reported that the average interview has between 5 and 8 questions \cite{hirevue}. Deciding on 6 questions, this would create a maximum interview length of 9 minutes. We decided on a 50\% split between easy and hard questions, similar to the GRE.
+
+Frustration is defined as an emotional state present when obstacles impair the progress towards achieving a goal \cite{lawson1965frustration}. To evaluate the system's ability to mitigate frustration, we must first induce it. Previous studies have achieved this by changing the description of a problem's difficulty and imposing a time constraint \cite{dennerlein2003frustrating},  \cite{yang2018evaluating}.This is because a difference between perceived and actual difficulty can cause frustration \cite{hone2006empathic}. Taking this, we mislabelled the hardest question, with the lowest percentage of correct answers as "easy". Additionally, we reduce the time allocated to this question to 50 seconds, along with one other question, resulting in two frustration-inducing questions, 1/3 of the exam.
+
+\subsection*{GUI}
+PySimpleGUI and OpenCV were the two main tools used in the design of the interface. Analysing existing computer interview software, main features included the question, the total time, time left and a screen of what the webcam was recording. For frustration inducing purposes, we also required a label indicating the difficulty of the question. See figure 2a and 2b for an example of HireVue's interface and our system respectively. The interface was made up of a number of PySimpleGUI components. OpenCV is used to constantly collect frames from the webcam. These are then displayed by refreshing the window every millisecond with the updated frame. At the top is the overall task, to be read before clicking start and setting off the timer. Also available before is the given time and difficulty of the question. It is important this information is shared before to ensure it is read, potentially contributing towards frustration. After disscussing their thought process to the camera, the user selects their final answers with the checkboxes before time runs out and they are disabled. As the timer reaches 10 seconds, it turns red to alert the user, and contribute towards the time-constraint aspect of frustration. Upon negative affect recognition, feedback is outputted in red, just below the image of themselves, so it is easily seen. This is also pointed out in the instructions. The user can see how they answered at the end. The python Shelve library allows the saving of a persistant database file the user can access and send for analysis. 
+
+\begin{figure}
+	\centering
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=0.95\linewidth]{diagrams/hirevue-interface.png}
+		\caption{A subfigure}
+		\label{fig:sub1}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\centering
+		\includegraphics[width=0.95\linewidth]{diagrams/my-interface.png}
+		\caption{A subfigure}
+		\label{fig:sub2}
+	\end{subfigure}
+	\caption{A figure with two subfigures}
+	\label{fig:test}
+\end{figure}
+\subsection*{System Feedback}
+As discussed, etiquette strategies between human-human interaction has been investigated, and more recently applied to human-computer interaction. Consistent observations are that positive politeness encourages students struggling to solve problems \cite{pearson1995pragmatics}, improves confidence and satisfaction \cite{yang2018evaluating}. Bald and positive politeness were also rated most appropriate for a hospital information system. We investigate whether these strategies prove effective in a computer interview. When negative emotions are flagged by facial expressions, the output rotates between no feedback, bald and positive politeness. The initial is to establish a baseline against which to compare effects of the strategies. The comments used are outlined in Table 1. Recall for bald take no account into the level of imposition to the hearer. An example from the original paper \cite{brown1987politeness} is "pass the hammer". We achieve this with the use of command words such as "consider". For positive politeness we aim to minimise threat to the hearer's face, with some element of solidarity. An example from the original paper is "I'll just come along, if you don't mind." An example of a strategy to minimise distance from the hearer, is the use of the third person such as "we" and "let's" to emphasise solidarity.
+	
+	\begin{table}[h]
+		\centering
+		\caption{Feedback Comments}
+		\begin{tabularx}{\linewidth}{|l|>{\raggedright\arraybackslash}X|}
+			\hline
+	 {\bf Bald} & {\bf Positive Politeness} \\ \hline
+		Consider each potential word definition carefully. & We can do this, why don’t we consider each word’s definition? \\ \hline
+		Ensure you have read the entire text slowly. & Gettting there, let’s make sure we’ve read through the text slowly! \\ \hline
+		Consider which words make the text flow best. & Shall we see which words seem most similar?\\ \hline
+		Make sure the whole text is understood. &  Shall we take it one word at a time?\\ \hline
+		Consider which words sound best in the context. & Let’s see if we can figure which words fit best. \\ \hline
+		Consider which words are most similar. & Good concentration! We can try eliminating unlikely words.\\ \hline
+\end{tabularx}
+\end{table}
+\subsection{Convolutional Neural Networks}
+There are various existing methods used for the classification of facial expressions and speech audio, such as Bayesian networks because of their ability to handle missing data during inference and training \cite{cohen2003learning}. For facial expressions, this method was shown to produce up to 72.5\% accuracy. Widely used was also Support Vector Machines (SVMs) and Hidden Markov Models (HMMs), the latter particularly known for its ability to describe the nature of expression change and dynamic performance precisely. However more recently convolutional neural networks (CNNs) have been used more with advantages such as a simpler architecture, faster training and boasting up to 96.7\% accuracy. In addition, it proves suitable for real time applications \cite{LOPES2017610}. From a speech emotion recognition perspective, the RAVDESS \cite{livingstone2018ryerson} dataset was tested against various models, where CNN proved most accurate, followed by Random Forest, SVM and finally decision tree \cite{christy2020multimodal}. 
+
+A thorough explanation of the underlying theory is beyond the scope of this work, but an overview is given for an understanding of the basic concept. Artificial neural networks (ANNs) are used for pattern recognition. A network is composed of an input, output and hidden layers. These are composed of perceptrons, each which taken an input and apply an activation function to produce an output, fed into the next perceptron over a weighted edge. Supervised learning is where data labelled with the expected output is inputted into the network. The output is computed, and the network adjusted by changing connection weights to improve classification. This is referred to as learning. ANNs are not capable of extracting image features. It is limited to classification. Rather CNNs use a combination of convolutional and pooling layers to extract features from the images. They reduce the number of parameters required to process an image by performing a convolution operation on images so that perceptrons can be arranged in three dimensions, width heigh and depth. Images can be efficiently processed this way.
+
+The main objective of the convolution layer is to extract high level features from the image, the number of layers depending on the complexity of the image. It uses different weighted kernels used to extract image features. These are slid over the input image, and computing a dot product of the filter with pixel values, calculating features for different pixels based on their neighbouring pixel values. The CNN learns the weight of the kernels itself. This operation results in a two dimensional activation, giving the response of the filter at each pixel value in the image. Activation functions are used to introduce non linearity to the network by deciding which perceptrons should be activated or not. ReLU, rectified linear unit, is an example of this allowing faster training of data and is also able to eliminate the problem of the vanishing gradient problem, where the gradient tends to 0 as x tends to +$\infty$ or - $\infty$.
+
+The purpose of the pooling layer is to reduce the computational complexity required to process the volume of data associated with an image. This is achieved by splitting the activation maps into grids the size of a pooling kernel and applying a non-linear downsampling each section. Max pooling returns the maximum value of each portion of the image.
+
+After pooling, a flatten function is applied to the output, converted it a tabular structure for classification by the ANN. A dropout layer is used to prevent overfitting by reducing the correlation between neurons. A selection of activation maps are ignored during training, although all are used during testing. Finally, in a dense layer, each neuron receives an input from all neurons in the previous layer. Using this we can shape the output of the network to the number of classes in the problem.
+
+\subsection{Modality I - Facial Expression}
+Key tools used in the facial expression recognition module include Keras, the high-level API for tensorflow, an open source library for machine learning, the FER-2013 dataset \cite{giannopoulos2018deep} and the open source computer vision library OpenCV. Training of the model is done using Google Colaboratory because of its access to CUDA, providing GPUs for processing.
+As applied in and validated by several previous studies \cite{graesser2005autotutor} \cite{woolf2009affect}, we decided on Ekman's six basic emotions \cite{ekman1992argument} to be the underlying model behind our chosen dataset. Ideally, the selected dataset would have more specific emotions, such as boredom, flow and eureka as used in a previous ITS \cite{barron2012intelligent}. However, relevant datasets were either not accessible to the public or were only accessible as samples, being too small for deep learning purposes. The previous ITS also made use of trained judges, beyond our available resources. To make our decision, variables at consideration were dataset size, date of dataset creation, and their use in research. FER-2013 proved well-validated \cite{giannopoulos2018deep} and was composed of 28,709 images (figure 3). The emotions were angry, disgust, fear, surprise, happy, sad and neutral.  According to the classic valence-arousal dimensions of emotion \cite{hepach2011conceptualizing}, frustration, was classed in the same category as angry, sad, disgusted and fear, with similar valence and arousal values. Although frustration is not directly identifiable in this dataset, we focus on minimising these underlying negative emotions -  angry, sadness, disgust and fear.
+
+\begin{figure}[h]
+	\centerline{\includegraphics[scale=.2]{diagrams/fer2013.png}}
+	\caption{FER-2013 dataset}
+\end{figure}
+
+The images come preprocessed, sized 48x48 and grayscale. The images are grey to reduce the colour channels from 3 to 1, reducing complexity and simplifying the problem so it is less computationally expensive. Additionally, colour is not critical for the identification of expressions. Data is received as a CSV file, with an integer emotion label between 0 and 6 and 2304 pixel values (0-255) for each image. The pixels are read, converted into an image format and saved in a file corresponding to its emotion. All pixel values are then rescaled by 1/255 for more manageable values for processing. Data was split into training and test sets with rations 75\% and 25\% respectively. Finally, we convert the labels to 2-dimensional one-hot encoded arrays.
+
+The final architecture is drawn in figure 4 \cite{bauerle2021net2vis}. The four blue rectangles are the convolutional layers. Max pooling layers are implemented after the second third and final convolutional layer. The flatten and fully connected layers are in brown and yellow respectively. The activation function used is ReLU, \[ y = max(0,x) \]. The advantages to this is that it is not computationally expensive to run and it is sparsely activated. Due to the max function, a perceptron is only activated for a positive input. Increased sparsity often means concise models with less overfitting and better predicting power. Similarly the dropout layers randomly select nodes to be set to 0, also preventing overfitting. The dropout probability for the first two are 0.25, and the final is set to 0.5. We ran the model over 250 epochs several times, adjusting parameters each time, reaching an optimal accuracy of 76\% * under a learning rate of 0.0001 and decay of $1 \times 10^{-6}$ with the Adam optimizer algorithm. The final model is exported and applied to application.
+
+\begin{figure}[h]
+	\centerline{\includegraphics[scale=.2]{diagrams/facialcnn.png}}
+	\caption{CNN architecture diagram}
+\end{figure}
+
+
+Detection of the user's face is done using a Haar feature-based cascade classifier \cite{viola2001rapid}. This is an object detection method that is trained using a lot of positive, images with faces, and negative images, those without faces, to train the classifier. OpenCV provides various pre-trained classifiers, including those for face. We used the provided facial classifier, as it had been validated in research, with better recall values than alternate existing classifiers such as Pico \cite{kalinovskii2015compact}. When a face is detected in a webcam frame, we initially put a frame around the it is converted to grayscale and resized to 48x48 as required by our model. Running it through the model, outputted is a two dimensional array, with each index representing a different emotion. Values in the array sum to one, representing confidence in each emotion. If the sum of negative emotion confidence values (anger, fear, digust, sadness) outweighed positive emotions (happy, neutral, surprise) we classed the frame as negative, and vice versa. 
+
+We also incorporated a module for tailoring the model towards a specific user. This was achieved by extending the original dataset with images of the user and producing a new model from this. A prerequisite to this are images of the user naturally producing each emotional state in the existing dataset. Research suggests methods to achieve this including the use of visual stimuli, music, autobigraphic recall and putting users in a particular situation, such as drinking a bitter drink to induce disgust \cite{siedlecka2019experimental}. In their study review, Siedlecka and Denson demonstrated the most effective way to achieve this was using visual stimuli. The review also emphasised the importance of inducing neutral emotions. This is important to produce the most evocative expressions, which may not be achieved as effectively if attempting to induce sadness directly after disgust, for instance. Chosen visual stimuli were taken from the 
+Open Affective Standardized Image Set (OASIS) dataset \cite{kurdi2017introducing}. These images come labelled with valence ratings, the degree of positive or negative affective response that the image evokes, along with arousal ratings, the intensity of the affective response that the image evokes, as determined from an online study of 822 participants. To determine which images are best suited for each affective state, we refer to the valence and arousal ratings of each of the 7 chosen emotions \cite{buechel2016emotion}. Figure 5 shows a graphical representation of this. Except for "surprise" we selected one image per emotional state that had been rated similarly to the values determined by Buechel and Hahn and placed these in a GUI. Surprise was eliminated since studies have rarely tried to induce the state, particularly using imagery. Even rarer was the successful increase in arousal \cite{siedlecka2019experimental}. Each stimulus image shown to the user is buffered with an image with low arousal values, provoking a neutral expression. Once a user is exposed to the image, every second frame is recorded, processed and saved to file. Processing is required so that the image is in the same format as those in the FER-2013 dataset: the image is saved in grayscale and resized to 48 x 48. We combine this data with original image data, and retrain the model.
+
+\begin{figure}[h]
+	\centerline{\includegraphics[scale=.5]{diagrams/emotionratings.png}}
+	\caption{Valence and arousal ratings of the 7 chosen emotions}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[scale=.5]{diagrams/stimulus-examples.png}}
+	\caption{Examples of stimulus images taken from the OASIS dataset}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[scale=.2]{diagrams/emotionratings.png}}
+	\caption{Example of expressions collected}
+\end{figure}
+
+
+\subsection{Modality II - Voice}
+Voice emotion recognition begins with the preparation of a dataset for training. For this we utilise the RAVDESS dataset \cite{livingstone2018ryerson}. This dataset contains 7356 audio (speech and song) and visual recordings of 12 male and 12 female actors pronouncing English sentences with expressions in the categories calm, happy, sad, angry, fearful, surprise, and disgust. The dataset has been used extensively in research, for applications such as gender recognition \cite{shegokar2016continuous}, and for the evaluation of machine learning models such as multitask learning \cite{zhang2016cross}. This dataset was selected for its availability, research validation and for the emotions available, corresponding with the FER-2013 dataset. Visual data was not necessariy for our application, so we narrowed data down to speech, of which there were 1440 files. Each clip is around 4 seconds, with the first and final second usually silence. The two standard sentences said are "kids are talking by the door" and "dogs are sitting by the door". The waveform of a fearful speech clip is shown in figure 8.
+
+Preliminary to training is data preparation. Silence from the clip was trimmed. We relabelled the dataset so that calm, happy and surprise were classed as 'positive', and 'sad', 'angry', 'fearful' as 'negative'. The python audio processing library, librosa \cite{brian_mcfee_2020_3955228}, was used to extract Mel Frequency Cepstral Co-efficients (MFCCs). These are state-of-the-art features used widely to recognise speech. On the surface, the conventional frequency is converted to Mel Scale, which takes into account human perception for sensitivity at appropriate frequencies. It scales the frequency in order to match more closely what the human ear can hear. The scale has been determined as a result of a series of experiments into how a human ear perceives noise. The MFCC also takes into account how human sound is affected by their vocal tract (e.g. tongue, teeth). A graphical representation of MFCC coefficients for the same fearful audio clip is shown in figure 9.
+
+\begin{figure}[h]
+	\centerline{\includegraphics[scale=.5]{diagrams/sample-waveform.png}}
+	\caption{Fearful speech waveform}
+\end{figure}
+
+\begin{figure}[h]
+	\centerline{\includegraphics[scale=.5]{diagrams/sample-mfcc.png}}
+	\caption{Fearful speech MFCC diagram}
+\end{figure}
+
+For a model more resistant to environmental variations and noise, we augment prosodic features in the noise files. Particularly, we transform the signal by stretching the sound, shift the pitch and add white noise. Applying this step also increases the dataset, advantageous for an improved model. Following this, we develop our CNN. As a starting point we referred to Issa et al's study on the use of CNNs for emotion recognition \cite{ISSA2020101894}. Their proposed framework obtained a 71.61\% accuracy on the RAVDESS dataset. As shown in the diagram, the model comprises of one-dimensional convolutional layers combined with batch normalisation, dropout and activation layers. The input layer receives 259x1 number arrays, is composed of 256 filters with a kernel size of 8. Similar to the facial expression CNN atchitecture, the output is activated by ReLU. After another convolutional layer, batch normalisation is applied, activated by ReLU and followed by dropout with a 0.25 rate. This output is fed into a max-pooling layer with a window size of 8. 4 convolution layers follow this with 128 filters of size 8, the first three activated by ReLU layers, and the final being followed by batch normalisation, a dropout of rate 0.25 and a final max pooling layer. After two further convolution and ReLU pairs, the output is flattened, and received by a fully connected layer with 2 units. We finally apply a softmax activation layer.
+
+
+
+
+
+\begin{figure}[h]
+	\centerline{\includegraphics[scale=.7]{diagrams/audiocnn.png}}
+	\caption{Speech CNN diagram}
+\end{figure}
+
+data collected:
+facial expressions
+facial expression dataset
+training on individual - stimulus images 
+cnn model
+audio data
+audio dataset
+cnn model
+how to collect both simultaneously - threading
+etiquette strategies
+
+
+
+\subsection{Figures and Tables}
+It should be noted that not all the details of the work carried out in the project can be represented in 20 pages.  It is therefore vital that the Project Log book be kept up to date as this will be used as supplementary material when the project paper is marked.  There should be between 10 and 20 referenced papers---references to Web based pages should be less than 10\%.
+
+In general, figures and tables should not appear before they are cited.  Place figure captions below the figures; place table titles above the tables.  If your figure has two parts, for example, include the labels ``(a)'' and ``(b)'' as part of the artwork.  Please verify that figures and tables you mention in the text actually exist.  make sure that all tables and figures are numbered as shown in Table \ref{units} and Figure 1.
+%sort out your own preferred means of inserting figures
+
+\begin{table}[htb]
+	\centering
+	\caption{UNITS FOR MAGNETIC PROPERTIES}
+	\vspace*{6pt}
+	\label{units}
+	\begin{tabular}{ccc}\hline\hline
+		Symbol & Quantity & Conversion from Gaussian \\ \hline
+	\end{tabular}
+\end{table}
+
+\subsection{References}
+
+The list of cited references should appear at the end of the report, ordered alphabetically by the surnames of the first authors.  References cited in the main text should use Harvard (author, date) format.  When citing a section in a book, please give the relevant page numbers, as in \cite[p293]{budgen}.  When citing, where there are either one or two authors, use the names, but if there are more than two, give the first one and use ``et al.'' as in  , except where this would be ambiguous, in which case use all author names.
+
+You need to give all authors' names in each reference.  Do not use ``et al.'' unless there are more than five authors.  Papers that have not been published should be cited as ``unpublished'' \cite{euther}.  Papers that have been submitted or accepted for publication should be cited as ``submitted for publication'' as in \cite{futher} .  You can also cite using just the year when the author's name appears in the text, as in ``but according to Futher \citeyear{futher}, we \dots''.  Where an authors has more than one publication in a year, add `a', `b' etc. after the year.
+
+\section{Solution}
+
+This section presents the solutions to the problems in detail.  The design and implementation details should all be placed in this section.  You may create a number of subsections, each focussing on one issue.  
+
+This section should be between 4 to 7 pages in length.
+
+\section{Results}
+
+this section presents the results of the solutions.  It should include information on experimental settings.  The results should demonstrate the claimed benefits/disadvantages of the proposed solutions.
+
+This section should be between 2 to 3 pages in length.
+
+\section{Evaluation}
+limitations: only 2 standard sentences in audio dataset and each clip is small
+
+This section should between 1 to 2 pages in length.
+
+\section{Conclusions}
+
+This section summarises the main points of this paper.  Do not replicate the abstract as the conclusion.  A conclusion might elaborate on the importance of the work or suggest applications and extensions.  This section should be no more than 1 page in length.
+
+The page lengths given for each section are indicative and will vary from project to project but should not exceed the upper limit.  A summary is shown in Table \ref{summary}.
+
+\begin{table}[htb]
+	\centering
+	\caption{SUMMARY OF PAGE LENGTHS FOR SECTIONS}
+	\vspace*{6pt}
+	\label{summary}
+	\begin{tabular}{|ll|c|} \hline
+		& \multicolumn{1}{c|}{\bf Section} & {\bf Number of Pages} \\ \hline
+		I. & Introduction & 2--3 \\ \hline
+		II. & Related Work & 2--3 \\ \hline
+		III. & Solution & 4--7 \\ \hline
+		IV. & Results & 2--3 \\ \hline
+		V. & Evaluation & 1-2 \\ \hline
+		VI. & Conclusions & 1 \\ \hline
+	\end{tabular}
+\end{table}
+
+
+\bibliography{projectpaper}
+
+
+\end{document}
